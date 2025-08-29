@@ -2,11 +2,14 @@ package main
 
 import (
 	"back/back/urlShortner/internal/config"
-	"back/back/urlShortner/internal/config/http-server/middleware/logger"
-	"back/back/urlShortner/internal/config/lib/logger/handlers/slogpretty"
-	"back/back/urlShortner/internal/config/lib/logger/sl"
-	"back/back/urlShortner/internal/config/storage/postgres"
+	"back/back/urlShortner/internal/http-server/handlers/url/redirect"
+	"back/back/urlShortner/internal/http-server/handlers/url/save"
+	"back/back/urlShortner/internal/http-server/middleware/logger"
+	"back/back/urlShortner/internal/lib/logger/handlers/slogpretty"
+	"back/back/urlShortner/internal/lib/logger/sl"
+	"back/back/urlShortner/internal/storage/postgres"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
@@ -15,36 +18,30 @@ import (
 
 const (
 	envLocal = "local"
-	envDev = "dev"
-	envProd = "prod"
+	envDev   = "dev"
+	envProd  = "prod"
 )
 
+func main() {
 
-func main(){
-	 
-	cfg:= config.MustLoad()
+	cfg := config.MustLoad()
 
-	log:= setupLogger(cfg.Env)
+	log := setupLogger(cfg.Env)
 
-	
-
-	log.Info("starting url-shortener", slog.String("env",cfg.Env))  //first start shows our environment
+	log.Info(
+		"starting url-shortener", 
+		slog.String("env", cfg.Env),
+		slog.String("version", "123"),
+	) //first start shows our environment
 	log.Debug("debug messages are enabled")
-	log.Error("error message are enabled")
 
-	
-
-	storage, err:= postgres.New(cfg.DBConfig)
-	if err!=nil{
-		log.Error("failed to init storage",sl.Err(err))
+	storage, err := postgres.New(cfg.DBConfig)
+	if err != nil {
+		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-
-
 	_ = storage
-
-
 
 	router := chi.NewRouter()
 
@@ -55,27 +52,45 @@ func main(){
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Post("/url", save.New(log, storage))
+	router.Get("/{alias}", redirect.New(log, storage))
+
+
+	log.Info("starting server", slog.String("adress", cfg.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server")
+	}
+
+	log.Error("server stopped")
 	// TODO: run server
 }
 
-func setupLogger(env string) *slog.Logger{
+func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
-	switch env{
+	switch env {
 	case envLocal:
 		log = setupPrettySlog()
 	case envDev:
-		log  = slog.New(
-			slog.NewJSONHandler(os.Stdout,&slog.HandlerOptions{Level: slog.LevelDebug}),
-		)	
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
 	case envProd:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-		)	
+		)
 	}
 
 	return log
 }
-
 
 func setupPrettySlog() *slog.Logger {
 	opts := slogpretty.PrettyHandlerOptions{

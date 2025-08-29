@@ -1,9 +1,11 @@
 package save
 
 import (
-	resp "back/back/urlShortner/internal/config/lib/api/response"
-	"back/back/urlShortner/internal/config/lib/logger/sl"
-	"back/back/urlShortner/internal/config/lib/random"
+	resp "back/back/urlShortner/internal/lib/api/response"
+	"back/back/urlShortner/internal/lib/logger/sl"
+	"back/back/urlShortner/internal/lib/random"
+	"back/back/urlShortner/internal/storage"
+	"errors"
 
 	"log/slog"
 	"net/http"
@@ -27,8 +29,10 @@ type Response struct{
 //TODO: move to cfg
 const aliasLength = 6
 
+
+//go:generate go run github.com/vektra/mockery/v2@v2.53.5 --name=URLSaver
 type URLSaver interface{
-	SaveURL(urlToSave string,alias string) (int64, error)
+	SaveURL(urlToSave string,alias string) error
 }
 
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc{
@@ -70,5 +74,34 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc{
 			alias = random.NewRandomString(aliasLength)
 		}
 		
+		err = urlSaver.SaveURL(req.URL,alias)
+		if errors.Is(err,storage.ErrURLExists){
+			log.Info("url already exists", slog.String("url",req.URL))
+
+			render.JSON(w, r, resp.Error("url already exists"))
+
+			return 	
+		}
+
+		if err != nil{
+			log.Error("failed to add url", sl.Err(err))
+
+			render.JSON(w,r, resp.Error("failed to add url"))
+
+			return 
+		}
+
+		log.Info("url added")
+
+		responceOK(w,r,alias)
+		
 	}
+}
+
+
+func responceOK(w http.ResponseWriter, r *http.Request, alias string){
+	render.JSON(w, r, Response{
+		Response: resp.OK(),
+		Alias: alias,
+	})
 }

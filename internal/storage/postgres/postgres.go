@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"back/back/urlShortner/internal/config"
-	"back/back/urlShortner/internal/config/storage"
+	"back/back/urlShortner/internal/storage"
 	
 
 	"database/sql"
