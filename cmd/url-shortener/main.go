@@ -1,5 +1,4 @@
 package main
-
 import (
 	"back/back/urlShortner/internal/config"
 	"back/back/urlShortner/internal/http-server/handlers/url/redirect"
@@ -11,9 +10,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
+	"back/back/urlShortner/internal/http-server/handlers/url/delete"
+	
 )
 
 const (
@@ -22,7 +23,11 @@ const (
 	envProd  = "prod"
 )
 
+
+
 func main() {
+
+	initConfig()
 
 	cfg := config.MustLoad()
 
@@ -54,8 +59,8 @@ func main() {
 
 	router.Post("/url", save.New(log, storage))
 	router.Get("/{alias}", redirect.New(log, storage))
-
-
+	router.Delete("/delete/{alias}", delete.New(log,storage))
+	
 	log.Info("starting server", slog.String("adress", cfg.Address))
 
 	srv := &http.Server{
@@ -72,6 +77,13 @@ func main() {
 
 	log.Error("server stopped")
 	// TODO: run server
+}
+
+//
+func initConfig(){
+	if err:=godotenv.Load(); err!=nil{
+		os.Exit(1)
+	}
 }
 
 func setupLogger(env string) *slog.Logger {
