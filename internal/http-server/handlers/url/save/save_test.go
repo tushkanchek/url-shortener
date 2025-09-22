@@ -1,9 +1,9 @@
 package save_test
 
 import (
-	"back/back/urlShortner/internal/http-server/handlers/url/save"
-	"back/back/urlShortner/internal/http-server/handlers/url/save/mocks"
-	"back/back/urlShortner/internal/lib/logger/handlers/slogdiscard"
+	"urlShortner/internal/http-server/handlers/url/save"
+	"urlShortner/internal/http-server/handlers/url/save/mocks"
+	"urlShortner/internal/lib/logger/handlers/slogdiscard"
 	"bytes"
 	"encoding/json"
 	"errors"

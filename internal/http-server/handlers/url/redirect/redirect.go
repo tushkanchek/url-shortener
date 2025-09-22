@@ -1,9 +1,9 @@
 package redirect
 
 import (
-	resp "back/back/urlShortner/internal/lib/api/response"
-	"back/back/urlShortner/internal/lib/logger/sl"
-	"back/back/urlShortner/internal/storage"
+	resp "urlShortner/internal/lib/api/response"
+	"urlShortner/internal/lib/logger/sl"
+	"urlShortner/internal/storage"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -59,7 +59,7 @@ func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc{
 		//redirect to found url
 		http.Redirect(w,r,resURL,http.StatusFound)
 
-
+		
 	}
 
 }

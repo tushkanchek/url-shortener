@@ -1,8 +1,8 @@
 package postgres
 
 import (
-	"back/back/urlShortner/internal/config"
-	"back/back/urlShortner/internal/storage"
+	"urlShortner/internal/config"
+	"urlShortner/internal/storage"
 	
 
 	"database/sql"
@@ -23,7 +23,7 @@ func New(cfg config.DBConfig) (*Storage, error){
 
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode, 
 	)
 
 	db, err := sql.Open("postgres", dsn)

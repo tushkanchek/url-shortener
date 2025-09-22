@@ -1,19 +1,19 @@
 package main
 import (
-	"back/back/urlShortner/internal/config"
-	"back/back/urlShortner/internal/http-server/handlers/url/redirect"
-	"back/back/urlShortner/internal/http-server/handlers/url/save"
-	"back/back/urlShortner/internal/http-server/middleware/logger"
-	"back/back/urlShortner/internal/lib/logger/handlers/slogpretty"
-	"back/back/urlShortner/internal/lib/logger/sl"
-	"back/back/urlShortner/internal/storage/postgres"
+	"urlShortner/internal/config"
+	"urlShortner/internal/http-server/handlers/url/redirect"
+	"urlShortner/internal/http-server/handlers/url/save"
+	"urlShortner/internal/http-server/middleware/logger"
+	"urlShortner/internal/lib/logger/handlers/slogpretty"
+	"urlShortner/internal/lib/logger/sl"
+	"urlShortner/internal/storage/postgres"
 	"log/slog"
 	"net/http"
 	"os"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	"back/back/urlShortner/internal/http-server/handlers/url/delete"
+	"urlShortner/internal/http-server/handlers/url/delete"
 	
 )
 
@@ -57,9 +57,19 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Post("/url", save.New(log, storage))
+
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password, 
+		}))
+
+		r.Post("/", save.New(log, storage))
+		r.Delete("/{alias}", delete.New(log,storage))
+	})
+
+	
 	router.Get("/{alias}", redirect.New(log, storage))
-	router.Delete("/delete/{alias}", delete.New(log,storage))
+	
 	
 	log.Info("starting server", slog.String("adress", cfg.Address))
 

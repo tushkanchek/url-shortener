@@ -1,6 +1,7 @@
 package response
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -48,4 +49,10 @@ func ValidationError(errs validator.ValidationErrors) Response {
 		Status: StatusError,
 		Error:  strings.Join(errMsgs, ", "),
 	}
+}
+
+
+func ToJSON(r Response) string {
+	data, _ := json.Marshal(r)
+	return string(data)
 }

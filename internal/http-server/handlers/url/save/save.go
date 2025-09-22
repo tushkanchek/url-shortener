@@ -1,10 +1,10 @@
 package save
 
 import (
-	resp "back/back/urlShortner/internal/lib/api/response"
-	"back/back/urlShortner/internal/lib/logger/sl"
-	"back/back/urlShortner/internal/lib/random"
-	"back/back/urlShortner/internal/storage"
+	resp "urlShortner/internal/lib/api/response"
+	"urlShortner/internal/lib/logger/sl"
+	"urlShortner/internal/lib/random"
+	"urlShortner/internal/storage"
 	"errors"
 
 	"log/slog"
