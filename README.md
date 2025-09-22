@@ -1,6 +1,6 @@
 URL-SHORTNER - convert url to alias:
 FOR EXAMPLE, we have url https://github.com/tushkanchek/url-shortener and convert it to petProject1,
-so not instead of writing this long url 
+so now instead of writing this long url 
 we can save it like 
 <img width="841" height="270" alt="image" src="https://github.com/user-attachments/assets/be0d2efd-a8bb-45a6-a27a-58bd7099dd67" />
 <img width="841" height="270" alt="image" src="https://github.com/user-attachments/assets/050be879-147e-4b03-a7ef-3b6c4ad13384" />
